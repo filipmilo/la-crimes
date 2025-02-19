@@ -18,7 +18,7 @@ def load_initial_data_hdfs():
     name_node_ops = SSHOperator(
         task_id="load_data",
         ssh_conn_id="name_node_ssh_conn",
-        command="/opt/hadoop-3.2.1/bin/hdfs dfs -mkdir /data && /opt/hadoop-3.2.1/bin/hdfs dfs -copyFromLocal /data/sprogrami2016.csv /data && /opt/hadoop-3.2.1/bin/hdfs dfs -ls /data",
+        command="/opt/hadoop-3.2.1/bin/hdfs dfs -mkdir /data && /opt/hadoop-3.2.1/bin/hdfs dfs -copyFromLocal /data/crime_data.csv /data && /opt/hadoop-3.2.1/bin/hdfs dfs -ls /data",
         cmd_timeout=300,
         ssh_hook=SSHHook(
             remote_host="namenode", username="root", password="asvsp", banner_timeout=10

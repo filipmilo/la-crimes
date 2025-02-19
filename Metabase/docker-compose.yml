@@ -22,6 +22,7 @@ services:
       - asvsp
 
   metabase:
+    platform: linux/amd64
     image: metabase/metabase:latest
     container_name: metabase
     hostname: metabase

@@ -7,6 +7,7 @@ networks:
 
 services:
   spark-master:
+    platform: linux/amd64
     #image: bde2020/spark-master:3.0.1-hadoop3.2
     build: .
     container_name: spark-master

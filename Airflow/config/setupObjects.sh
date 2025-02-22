@@ -26,7 +26,8 @@ airflow connections add 'LOCAL_FS_FILES' \
         "extra": "{ \"path\": \"/opt/airflow/files\"}"
     }'
 
-# Set up variables
-# echo ">> Setting up airflow variables"
-# airflow variables set SQL_CHUNK_SIZE 20
-
+airflow connections add 'AWS_S3' \
+	--conn-json '{
+        "conn_type": "aws",
+        "extra": "{ \"region_name\": \"us-east-1\", \"profile_name\": \"private_account\"}"
+    }'

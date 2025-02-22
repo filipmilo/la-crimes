@@ -1,6 +1,6 @@
 from datetime import datetime
 from airflow.decorators import dag
-from airflow.providers.amazon.aws.operators.s3 import S3CreateObjectOperator
+from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
 
 BUCKET = "la-crimes-data-lake"
 
@@ -13,15 +13,16 @@ BUCKET = "la-crimes-data-lake"
     catchup=False,
 )
 def load_dataset():
-    create_object = S3CreateObjectOperator(
+    create_object = LocalFilesystemToS3Operator(
+        aws_conn_id="AWS_S3",
         task_id="create_object",
-        s3_bucket=BUCKET,
-        s3_key="bronze",
-        data="data/crime_data.csv",
+        dest_bucket=BUCKET,
+        dest_key="bronze/crime_data.csv",
+        filename="/opt/airflow/files/crime_data.csv",
         replace=True,
     )
 
-    print(create_object)
+    create_object.run
 
 
 load_dataset()

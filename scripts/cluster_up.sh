@@ -1,5 +1,11 @@
 #!/bin/bash
 
+echo "> Exporting credentials"
+
+export AWS_ACCESS_KEY_ID=$(aws configure get private_account.aws_access_key_id)
+export AWS_SECRET_ACCESS_KEY=$(aws configure get private_account.aws_secret_access_key)
+export AWS_DEFAULT_REGION=$(aws configure get private_account.region)
+
 echo "> Starting up cluster"
 echo "> Creating docker network 'asvsp'"
 docker network create asvsp
@@ -17,6 +23,3 @@ sleep 25
 echo ">> Setting up Airflow objects"
 cmd='bash -c "/opt/airflow/config/setupObjects.sh"'
 docker exec -it airflow-airflow-webserver-1 $cmd
-
-#echo ">> Starting up Metabase"
-#docker compose -f Metabase/docker-compose.yml up -d

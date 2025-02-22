@@ -29,5 +29,5 @@ airflow connections add 'LOCAL_FS_FILES' \
 airflow connections add 'AWS_S3' \
 	--conn-json '{
         "conn_type": "aws",
-        "extra": "{ \"region_name\": \"us-east-1\", \"profile_name\": \"private_account\"}"
+        "extra": "{ \"region_name\": \"us-east-1\"}"
     }'

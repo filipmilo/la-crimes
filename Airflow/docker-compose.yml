@@ -82,6 +82,8 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-common-sql[openlineage] apache-airflow-providers-microsoft-mssql apache-airflow-providers-postgres}
     AIRFLOW__PROVIDERS_ODBC__ALLOW_DRIVER_IN_EXTRA: 'True'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags

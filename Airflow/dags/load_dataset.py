@@ -10,8 +10,6 @@ BUCKET = "la-crimes-data-lake"
     description="DAG in charge of loading data to Amazon S3 bronze layer",
     start_date=datetime(2025, 2, 22),
     schedule_interval=None,
-    max_active_runs=1,
-    catchup=False,
 )
 def load_dataset():
 
@@ -31,14 +29,20 @@ def load_dataset():
 
     @task(task_id="clean")
     def clean():
-        clean = SparkSubmitOperator(
+        clean_operator = SparkSubmitOperator(
             task_id='clean_dataset',
             conn_id='SPARK_CONNECTION',
-            application='/clean_dataset.py',
+            application='opt/airflow/dags/jobs/clean_dataset.py',
+            conf={
+                "spark.master": "spark://spark-master:7077"
+            },
+            executor_memory="1g",
+            driver_memory="1g",
             verbose=True
         )
 
-        clean.run
+        clean_operator
+
 
 
     load() >> clean()

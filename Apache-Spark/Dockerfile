@@ -1,4 +1,5 @@
-FROM bde2020/spark-master:3.0.1-hadoop3.2
+#FROM bde2020/spark-master:3.0.1-hadoop3.2
+FROM bitnami/spark:latest
 
 RUN apk update && apk add openssh-server
 RUN mkdir /var/run/sshd

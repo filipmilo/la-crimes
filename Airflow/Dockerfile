@@ -5,11 +5,10 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 USER root
-
 RUN apt update && \
-  apt-get install procps \
   apt-get install -y openjdk-11-jdk && \
-  apt-get install nano
+  apt-get install nano && \
+  apt-get install -y procps 
 
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-arm64
 RUN export JAVA_HOME

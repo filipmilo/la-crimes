@@ -9,19 +9,20 @@ def quiet_logs(sc):
 spark = SparkSession \
     .builder \
     .appName("Pyspark clean dataset") \
-    .config("spark.rpc.message.maxSize", "512") \
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
     .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
     .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
     .getOrCreate()
 
-quiet_logs(spark)
+#quiet_logs(spark)
+
+print(spark.version)
 
 df = spark.read.csv("s3a://la-crimes-data-lake/bronze/crime_data.csv", header=True, inferSchema=True)
 
 # TODO: Clean data and prep for aggregating phase
 df.show(5)
-
 
 df.write \
     .mode("overwrite") \

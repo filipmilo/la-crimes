@@ -12,12 +12,8 @@ def clean_dataset():
     clean_operator = SparkSubmitOperator(
             task_id='clean_dataset',
             conn_id='SPARK_CONNECTION',
-            application='opt/airflow/dags/jobs/clean_dataset.py',
-            conf={
-                "spark.master": "spark://spark-master:7077"
-            },
-            executor_memory="1g",
-            driver_memory="1g",
+            application='dags/jobs/clean_dataset.py',
+            packages="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262",
             verbose=True
         )
 

@@ -10,12 +10,12 @@ echo "> Starting up cluster"
 echo "> Creating docker network 'asvsp'"
 docker network create asvsp
 
-ssh_server_startup_cmd='bash -c "/usr/sbin/sshd"'
+#ssh_server_startup_cmd='bash -c "/usr/sbin/sshd"'
 
 echo ">> Starting up Apache Spark"
 docker compose -f Apache-Spark/docker-compose.yml up -d
 sleep 15
-docker exec -it spark-master $ssh_server_startup_cmd
+#docker exec -it spark-master $ssh_server_startup_cmd
 
 echo ">> Starting up Airflow"
 docker compose -f Airflow/docker-compose.yml up -d

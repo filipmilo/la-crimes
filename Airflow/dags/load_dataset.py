@@ -1,7 +1,6 @@
 from datetime import datetime
-from airflow.decorators import dag, task
+from airflow.decorators import dag
 from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
 BUCKET = "la-crimes-data-lake"
 
@@ -13,38 +12,16 @@ BUCKET = "la-crimes-data-lake"
 )
 def load_dataset():
 
-    @task(task_id="load")
-    def load():
-        create_object = LocalFilesystemToS3Operator(
-            aws_conn_id="AWS_S3",
-            task_id="create_object",
-            dest_bucket=BUCKET,
-            dest_key="bronze/crime_data.csv",
-            filename="/opt/airflow/files/crime_data.csv",
-            replace=True,
-        )
+    create_object = LocalFilesystemToS3Operator(
+        aws_conn_id="AWS_S3",
+        task_id="create_object",
+        dest_bucket=BUCKET,
+        dest_key="bronze/crime_data.csv",
+        filename="/opt/airflow/files/crime_data.csv",
+        replace=True,
+    )
 
-        create_object.run
+    create_object.run
 
-
-    @task(task_id="clean")
-    def clean():
-        clean_operator = SparkSubmitOperator(
-            task_id='clean_dataset',
-            conn_id='SPARK_CONNECTION',
-            application='opt/airflow/dags/jobs/clean_dataset.py',
-            conf={
-                "spark.master": "spark://spark-master:7077"
-            },
-            executor_memory="1g",
-            driver_memory="1g",
-            verbose=True
-        )
-
-        clean_operator
-
-
-
-    load() >> clean()
 
 load_dataset()

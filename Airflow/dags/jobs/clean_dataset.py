@@ -15,15 +15,11 @@ spark = SparkSession \
     .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
     .getOrCreate()
 
-#quiet_logs(spark)
-
-print(spark.version)
+quiet_logs(spark)
 
 df = spark.read.csv("s3a://la-crimes-data-lake/bronze/crime_data.csv", header=True, inferSchema=True)
 
-# TODO: Clean data and prep for aggregating phase
-df.show(5)
-
-df.write \
+df.coalesce(1) \
+    .write \
     .mode("overwrite") \
     .parquet("s3a://la-crimes-data-lake/silver/")

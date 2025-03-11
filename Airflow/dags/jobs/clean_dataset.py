@@ -1,7 +1,8 @@
 import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_date, to_timestamp, date_format, lpad, concat_ws
-TIME_FORMAT="yyyy MMM dd hh:mm:ss a"
+from pyspark.sql.functions import to_date
+
+TIME_FORMAT="MM/dd/yyyy hh:mm:ss a"
 
 def quiet_logs(sc):
   logger = sc._jvm.org.apache.log4j
@@ -23,8 +24,8 @@ df = spark.read.csv("s3a://la-crimes-data-lake/bronze/crime_data.csv", header=Tr
 
 df = df \
     .withColumnRenamed("DR_NO", "id") \
-    .withColumnRenamed("AREA", "area_id") \
-    .withColumnRenamed("AREA_NAME", "area_name") \
+    .withColumnRenamed("AREA ", "area_id") \
+    .withColumnRenamed("AREA NAME", "area_name") \
     .withColumnRenamed("Rpt Dist No", "reporting_discrict_id") \
     .withColumnRenamed("Part 1-2", "part_1_2") \
     .withColumnRenamed("Crm Cd", "crime_code") \
@@ -51,10 +52,12 @@ df = df \
     .withColumnRenamed("Date OCC", "date_occured") \
     .withColumnRenamed("TIME OCC", "time_occured") 
 
+
 df = df \
     .withColumn("date_reported", to_date(df["date_reported"], TIME_FORMAT)) \
     .withColumn("date_occured", to_date(df["date_occured"], TIME_FORMAT))
 
+df.show(5)
 
 df.coalesce(1) \
     .write \

@@ -23,3 +23,6 @@ sleep 25
 echo ">> Setting up Airflow objects"
 cmd='bash -c "/opt/airflow/config/setupObjects.sh"'
 docker exec -it airflow-airflow-webserver-1 $cmd
+
+echo ">> Starting up Metabase"
+docker compose -f Metabase/docker-compose.yml up -d

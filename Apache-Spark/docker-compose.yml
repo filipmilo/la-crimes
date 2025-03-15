@@ -43,24 +43,49 @@ services:
     ports:
       - 8001:8081
   
-  #  spark-history-server:
-  #    platform: linux/amd64
-  #    image: bde2020/spark-history-server:3.1.1-hadoop3.2
-  #    container_name: spark-history-server
-  #    command: spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
-  #    ports:
-  #      - "18081:18081"
-  #    environment:
-  #      SPARK_MODE: history-server
-  #      SPARK_MASTER: spark://spark-master:7077
-  #      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  #      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  #    env_file:
-  #      - .env
-  #    depends_on:
-  #      - spark-master
-  #    volumes:
-  #      - spark-events:/tmp/spark-events
-  #
-  #volumes:
-  #  spark-events:
+  spark-thrift:
+    build: .
+    container_name: spark-thrift
+    depends_on:
+      - spark-master
+      - hive-metastore
+    command: >
+      /opt/bitnami/spark/sbin/start-thriftserver.sh
+      --conf spark.sql.catalogImplementation=hive
+      --conf spark.hadoop.fs.s3a.endpoint=s3.amazonaws.com
+      --conf spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID
+      --conf spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY
+      --conf spark.hadoop.fs.s3a.path.style.access=true
+    environment:
+        HIVE_METASTORE_URI: thrift://hive-metastore:9083
+        SPARK_MASTER: spark://spark-master:7077
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    ports:
+      - "10000:10000"
+
+  hive-metastore:
+    image: apache/hive:4.0.1
+    container_name: hive-metastore
+    depends_on:
+      - hive-postgres
+    environment:
+      SERVICE_NAME: metastore
+      HIVE_METASTORE_DB_TYPE: postgres
+      HIVE_METASTORE_DB_HOST: hive-postgres
+      HIVE_METASTORE_DB_PORT: 5432
+      HIVE_METASTORE_DB_USER: hive
+      HIVE_METASTORE_DB_PASSWORD: hivepassword
+    ports:
+      - "9083:9083"
+
+  hive-postgres:
+    image: postgres:latest
+    container_name: hive-metastore-db
+    hostname: hive-postgres
+    environment:
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hivepassword
+      POSTGRES_DB: metastore
+    ports:
+      - "5432:5432"

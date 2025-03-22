@@ -21,7 +21,9 @@ spark = SparkSession \
 
 df = spark.read.parquet("s3a://la-crimes-data-lake/silver/cleaned.parquet")
 
-df.groupBy(year("date_occured").alias("year")).count().orderBy("year").show()
+df = df.groupBy(year("date_occured").alias("year")).count().orderBy("year")
+
+df.show()
 
 df.coalesce(1) \
     .write \

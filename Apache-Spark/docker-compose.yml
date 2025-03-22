@@ -61,6 +61,8 @@ services:
         SPARK_MASTER: spark://spark-master:7077
         AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
         AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    networks:
+      - asvsp
     ports:
       - "10000:10000"
 
@@ -76,6 +78,8 @@ services:
       HIVE_METASTORE_DB_PORT: 5432
       HIVE_METASTORE_DB_USER: hive
       HIVE_METASTORE_DB_PASSWORD: hivepassword
+    networks:
+      - asvsp
     ports:
       - "9083:9083"
 
@@ -87,5 +91,7 @@ services:
       POSTGRES_USER: hive
       POSTGRES_PASSWORD: hivepassword
       POSTGRES_DB: metastore
+    networks:
+      - asvsp
     ports:
       - "5432:5432"

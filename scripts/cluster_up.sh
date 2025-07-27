@@ -26,3 +26,6 @@ docker exec -it airflow-airflow-webserver-1 $cmd
 
 echo ">> Starting up Metabase"
 docker compose -f Metabase/docker-compose.yml up -d
+
+echo ">> Starting up Kafka"
+docker compose -f Kafka/docker-compose.yml up -d

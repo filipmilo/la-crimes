@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "Unique call identifier"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the call was received"
+    },
+    "call_type": {
+      "type": "string",
+      "enum": ["EMERGENCY", "NON_EMERGENCY", "TRANSFER"],
+      "description": "Type of incoming call"
+    },
+    "incident_type": {
+      "type": "string",
+      "description": "Category of reported incident"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Call priority (1=highest, 5=lowest)"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Street address"
+        },
+        "area_name": {
+          "type": "string",
+          "description": "LA area name"
+        },
+        "latitude": {
+          "type": "number",
+          "description": "GPS latitude"
+        },
+        "longitude": {
+          "type": "number", 
+          "description": "GPS longitude"
+        }
+      },
+      "required": ["latitude", "longitude"]
+    },
+    "caller_info": {
+      "type": "object",
+      "properties": {
+        "phone_number": {
+          "type": "string",
+          "description": "Caller phone (anonymized)"
+        },
+        "is_anonymous": {
+          "type": "boolean",
+          "description": "Whether caller requested anonymity"
+        }
+      }
+    },
+    "dispatch_info": {
+      "type": "object",
+      "properties": {
+        "units_dispatched": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Police/Fire/EMS units sent"
+        },
+        "response_time_minutes": {
+          "type": "number",
+          "description": "Time to dispatch units"
+        },
+        "is_dispatched": {
+          "type": "boolean",
+          "description": "Whether units were sent"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["RECEIVED", "PROCESSING", "DISPATCHED", "CLOSED"],
+      "description": "Current call status"
+    }
+  },
+  "required": ["call_id", "timestamp", "call_type", "incident_type", "priority", "location", "status"]
+}

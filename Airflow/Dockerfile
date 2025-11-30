@@ -8,10 +8,7 @@ USER root
 RUN apt update && \
   apt-get install -y openjdk-11-jdk && \
   apt-get install nano && \
-  apt-get install -y procps 
-
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-arm64
-RUN export JAVA_HOME
+  apt-get install -y procps
 
 #RUN mkdir -p /opt/spark
 #COPY spark-3.5.0-bin-hadoop3.tgz /opt/spark

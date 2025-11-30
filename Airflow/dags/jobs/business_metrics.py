@@ -2,8 +2,8 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, count, sum as spark_sum, avg, max as spark_max, min as spark_min,
-    when, datediff, lag, desc, asc, round as spark_round, 
-    dense_rank, percent_rank, ntile
+    when, datediff, lag, desc, asc, round as spark_round,
+    dense_rank, percent_rank, ntile, coalesce, lit
 )
 from pyspark.sql.window import Window
 

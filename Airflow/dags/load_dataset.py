@@ -21,7 +21,7 @@ def load_dataset():
         replace=True,
     )
 
-    create_object.run
+    create_object
 
 
 load_dataset()

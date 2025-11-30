@@ -17,7 +17,7 @@ def perform():
             verbose=True
         )
 
-    operator
+    return operator
 
 
 perform()

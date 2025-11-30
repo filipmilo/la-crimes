@@ -17,7 +17,7 @@ def clean_dataset():
             verbose=True
         )
 
-    clean_operator
+    return clean_operator
 
 
 clean_dataset()

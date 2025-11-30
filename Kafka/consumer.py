@@ -9,10 +9,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Call911Consumer:
-    def __init__(self, topic='911-calls', bootstrap_servers=['localhost:9092']):
-        self.topic = topic
+    def __init__(self, topic=None, bootstrap_servers=None):
+        self.topic = topic or os.getenv('KAFKA_TOPIC', '911-calls')
+        bootstrap_servers = bootstrap_servers or os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092').split(',')
         self.consumer = KafkaConsumer(
-            topic,
+            self.topic,
             bootstrap_servers=bootstrap_servers,
             value_deserializer=lambda x: json.loads(x.decode('utf-8')),
             key_deserializer=lambda x: x.decode('utf-8') if x else None,

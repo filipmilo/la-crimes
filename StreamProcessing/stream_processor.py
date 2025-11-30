@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 from kafka import KafkaConsumer, KafkaProducer
@@ -15,13 +16,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class StreamProcessor:
-    def __init__(self, kafka_servers=['localhost:9092'], es_host='localhost:9200'):
-        self.kafka_servers = kafka_servers
-        
+    def __init__(self, kafka_servers=None, es_host=None):
+        self.kafka_servers = kafka_servers or os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092').split(',')
+        es_host = es_host or os.getenv('ELASTICSEARCH_HOST', 'localhost:9200')
+
         # Kafka setup
         self.consumer = KafkaConsumer(
             '911-calls',
-            bootstrap_servers=kafka_servers,
+            bootstrap_servers=self.kafka_servers,
             value_deserializer=lambda x: json.loads(x.decode('utf-8')),
             key_deserializer=lambda x: x.decode('utf-8') if x else None,
             group_id='stream-processing-group',
@@ -29,7 +31,7 @@ class StreamProcessor:
         )
         
         self.producer = KafkaProducer(
-            bootstrap_servers=kafka_servers,
+            bootstrap_servers=self.kafka_servers,
             value_serializer=lambda x: json.dumps(x).encode('utf-8'),
             key_serializer=lambda x: x.encode('utf-8') if x else None
         )

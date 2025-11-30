@@ -105,13 +105,14 @@ def generate_911_call():
     return call_data
 
 def main():
+    bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092').split(',')
     producer = KafkaProducer(
-        bootstrap_servers=['localhost:9092'],
+        bootstrap_servers=bootstrap_servers,
         value_serializer=lambda x: json.dumps(x).encode('utf-8'),
         key_serializer=lambda x: x.encode('utf-8') if x else None
     )
-    
-    topic = '911-calls'
+
+    topic = os.getenv('KAFKA_TOPIC', '911-calls')
     
     print(f"Starting 911 call generator. Sending to topic: {topic}")
     print("Press Ctrl+C to stop...")

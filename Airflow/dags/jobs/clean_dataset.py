@@ -1,6 +1,6 @@
 import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_date
+from pyspark.sql.functions import to_date, year, col
 
 TIME_FORMAT="MM/dd/yyyy hh:mm:ss a"
 
@@ -26,7 +26,7 @@ df = df \
     .withColumnRenamed("DR_NO", "id") \
     .withColumnRenamed("AREA ", "area_id") \
     .withColumnRenamed("AREA NAME", "area_name") \
-    .withColumnRenamed("Rpt Dist No", "reporting_discrict_id") \
+    .withColumnRenamed("Rpt Dist No", "reporting_district_id") \
     .withColumnRenamed("Part 1-2", "part_1_2") \
     .withColumnRenamed("Crm Cd", "crime_code") \
     .withColumnRenamed("Crm Cd Desc", "crime_description") \
@@ -55,7 +55,9 @@ df = df \
 
 df = df \
     .withColumn("date_reported", to_date(df["date_reported"], TIME_FORMAT)) \
-    .withColumn("date_occured", to_date(df["date_occured"], TIME_FORMAT))
+    .withColumn("date_occured", to_date(df["date_occured"], TIME_FORMAT)) \
+    .withColumn("occurrence_year", year(col("date_occured"))) \
+    .withColumn("report_year", year(col("date_reported")))
 
 df.show(5)
 

@@ -26,5 +26,5 @@ docker exec -it airflow-airflow-webserver-1 $cmd
 
 echo "> Batch Processing Stack started successfully!"
 echo "> Airflow UI available at: http://localhost:8080"
-echo "> Spark Master UI available at: http://localhost:8080"
+echo "> Spark Master UI available at: http://localhost:8000"
 echo "> To test: Access Airflow UI and trigger 'load_dataset' then 'clean_dataset' DAGs"

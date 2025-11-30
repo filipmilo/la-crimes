@@ -21,7 +21,7 @@ echo ">> Waiting for Stream Processor to initialize..."
 sleep 10
 
 echo "> Stream Processing Stack started successfully!"
-echo "> Kafka UI available at: http://localhost:9092"
+echo "> Kafka UI available at: http://localhost:8081"
 echo "> To test: cd Kafka && python producer.py (in one terminal)"
 echo ">         cd Kafka && python consumer.py (in another terminal)"
 echo ">         cd StreamProcessing && python stream_processor.py (for processing)"

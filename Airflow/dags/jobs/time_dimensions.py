@@ -1,25 +1,15 @@
-import os
-from pyspark.sql import SparkSession
+import sys
+sys.path.insert(0, '/opt/airflow/dags')
+
 from pyspark.sql.functions import (
-    col, year, month, dayofmonth, hour, date_format, 
-    dayofweek, when, to_timestamp, concat, lpad
+    col, year, month, dayofmonth, hour, date_format,
+    dayofweek, when, to_timestamp, concat, lpad, lit
 )
+from spark_config import create_spark_session, S3_BUCKET
 
-def quiet_logs(sc):
-    logger = sc._jvm.org.apache.log4j
-    logger.LogManager.getLogger("org").setLevel(logger.Level.ERROR)
-    logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
+spark = create_spark_session("Time Dimensions")
 
-spark = SparkSession \
-    .builder \
-    .appName("Time Dimensions") \
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
-    .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
-    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
-    .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
-    .getOrCreate()
-
-df = spark.read.parquet("s3a://la-crimes-data-lake/silver/cleaned.parquet")
+df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
 # Create full datetime from date and time
 df = df.withColumn("datetime_occurred", 
@@ -69,4 +59,4 @@ df.show(5)
 df.coalesce(1) \
     .write \
     .mode("overwrite") \
-    .parquet("s3a://la-crimes-data-lake/gold/time_enriched.parquet")
+    .parquet(f"s3a://{S3_BUCKET}/gold/time_enriched.parquet")

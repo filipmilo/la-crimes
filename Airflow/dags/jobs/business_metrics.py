@@ -1,27 +1,17 @@
-import os
-from pyspark.sql import SparkSession
+import sys
+sys.path.insert(0, '/opt/airflow/dags')
+
 from pyspark.sql.functions import (
     col, count, sum as spark_sum, avg, max as spark_max, min as spark_min,
     when, datediff, lag, desc, asc, round as spark_round,
     dense_rank, percent_rank, ntile, coalesce, lit
 )
 from pyspark.sql.window import Window
+from spark_config import create_spark_session, S3_BUCKET
 
-def quiet_logs(sc):
-    logger = sc._jvm.org.apache.log4j
-    logger.LogManager.getLogger("org").setLevel(logger.Level.ERROR)
-    logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
+spark = create_spark_session("Business Metrics")
 
-spark = SparkSession \
-    .builder \
-    .appName("Business Metrics") \
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
-    .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
-    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
-    .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
-    .getOrCreate()
-
-df = spark.read.parquet("s3a://la-crimes-data-lake/silver/cleaned.parquet")
+df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
 # Calculate case resolution rates by area
 resolution_stats = df.groupBy("area_id", "area_name") \
@@ -137,4 +127,4 @@ df.show(5)
 df.coalesce(1) \
     .write \
     .mode("overwrite") \
-    .parquet("s3a://la-crimes-data-lake/gold/business_metrics.parquet")
+    .parquet(f"s3a://{S3_BUCKET}/gold/business_metrics.parquet")

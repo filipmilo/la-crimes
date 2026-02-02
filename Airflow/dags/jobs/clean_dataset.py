@@ -1,26 +1,14 @@
-import os
-from pyspark.sql import SparkSession
+import sys
+sys.path.insert(0, '/opt/airflow/dags')
+
 from pyspark.sql.functions import to_date, year, col
+from spark_config import create_spark_session, S3_BUCKET
 
 TIME_FORMAT="MM/dd/yyyy hh:mm:ss a"
 
-def quiet_logs(sc):
-  logger = sc._jvm.org.apache.log4j
-  logger.LogManager.getLogger("org").setLevel(logger.Level.ERROR)
-  logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
+spark = create_spark_session("Clean Dataset")
 
-spark = SparkSession \
-    .builder \
-    .appName("Pyspark clean dataset") \
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
-    .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
-    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
-    .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
-    .getOrCreate()
-
-#quiet_logs(spark)
-
-df = spark.read.csv("s3a://la-crimes-data-lake/bronze/crime_data.csv", header=True, inferSchema=True)
+df = spark.read.csv(f"s3a://{S3_BUCKET}/bronze/crime_data.csv", header=True, inferSchema=True)
 
 df = df \
     .withColumnRenamed("DR_NO", "id") \
@@ -64,4 +52,4 @@ df.show(5)
 df.coalesce(1) \
     .write \
     .mode("overwrite") \
-    .parquet("s3a://la-crimes-data-lake/silver/cleaned.parquet")
+    .parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")

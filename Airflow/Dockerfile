@@ -6,7 +6,7 @@ RUN pip install -r requirements.txt
 
 USER root
 RUN apt update && \
-  apt-get install -y openjdk-11-jdk && \
+  apt-get install -y openjdk-17-jdk && \
   apt-get install nano && \
   apt-get install -y procps
 

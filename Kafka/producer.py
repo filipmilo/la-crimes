@@ -2,6 +2,7 @@ import json
 import random
 import time
 import uuid
+import os
 from datetime import datetime, timedelta
 from kafka import KafkaProducer
 

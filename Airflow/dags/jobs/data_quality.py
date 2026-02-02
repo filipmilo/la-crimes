@@ -1,26 +1,16 @@
-import os
-from pyspark.sql import SparkSession
+import sys
+sys.path.insert(0, '/opt/airflow/dags')
+
 from pyspark.sql.functions import (
     col, when, isnan, isnull, regexp_replace, upper, trim,
     coalesce, lit, length, size, split
 )
 from pyspark.sql.types import IntegerType
+from spark_config import create_spark_session, S3_BUCKET
 
-def quiet_logs(sc):
-    logger = sc._jvm.org.apache.log4j
-    logger.LogManager.getLogger("org").setLevel(logger.Level.ERROR)
-    logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
+spark = create_spark_session("Data Quality Improvements")
 
-spark = SparkSession \
-    .builder \
-    .appName("Data Quality Improvements") \
-    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
-    .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
-    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
-    .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com") \
-    .getOrCreate()
-
-df = spark.read.parquet("s3a://la-crimes-data-lake/silver/cleaned.parquet")
+df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
 # Handle missing/invalid victim ages
 df = df.withColumn("victim_age_clean",
@@ -118,4 +108,4 @@ df.show(5)
 df.coalesce(1) \
     .write \
     .mode("overwrite") \
-    .parquet("s3a://la-crimes-data-lake/gold/data_quality_enhanced.parquet")
+    .parquet(f"s3a://{S3_BUCKET}/gold/data_quality_enhanced.parquet")

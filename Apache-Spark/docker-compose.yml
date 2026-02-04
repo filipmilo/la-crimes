@@ -7,12 +7,11 @@ networks:
 
 services:
   spark-master:
-    #image: bitnami/spark:latest
-    build: .
+    image: apache/spark:3.5.8-java17-python3
     container_name: spark-master
     hostname: spark-master
     environment:
-      SPARK_MODE: master
+      SPARK_NO_DAEMONIZE: "true"
       SPARK_RPC_AUTHENTICATION_ENABLED: no
       SPARK_RPC_ENCRYPTION_ENABLED: no
       SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
@@ -20,6 +19,9 @@ services:
       PYSPARK_PYTHON: python3
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    command: >
+      bash -c "/opt/spark/sbin/start-master.sh &&
+      tail -f /dev/null"
     ports:
       - "8000:8080"
       - "7077:7077"
@@ -27,15 +29,17 @@ services:
       - asvsp
 
   spark-worker:
-    #image: bitnami/spark:latest
-    build: .
+    image: apache/spark:3.5.8-java17-python3
     container_name: spark-worker
     hostname: spark-worker
     environment:
-      SPARK_MODE: worker
-      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_NO_DAEMONIZE: "true"
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    command: >
+      bash -c "/opt/spark/sbin/start-worker.sh
+      spark://spark-master:7077 &&
+      tail -f /dev/null"
     depends_on:
       - spark-master
     networks:
@@ -44,19 +48,28 @@ services:
       - 8001:8081
   
   spark-thrift:
-    build: .
+    image: apache/spark:3.5.8-java17-python3
     container_name: spark-thrift
     depends_on:
       - spark-master
       - hive-metastore
     command: >
-      /opt/bitnami/spark/sbin/start-thriftserver.sh
+      /opt/spark/sbin/start-thriftserver.sh
+      --conf spark.sql.hive.metastore.version=3.1.3
+      --conf spark.sql.hive.metastore.jars=maven
+      --conf spark.hadoop.hive.metastore.uris=thrift://hive-metastore:9083
       --conf spark.sql.catalogImplementation=hive
       --conf spark.hadoop.fs.s3a.endpoint=s3.amazonaws.com
       --conf spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID
       --conf spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY
       --conf spark.hadoop.fs.s3a.path.style.access=true
+      --conf spark.hadoop.fs.s3a.connection.timeout=60000
+      --conf spark.hadoop.fs.s3a.connection.establish.timeout=30000
+      --conf spark.hadoop.fs.s3a.connection.acquisition.timeout=60000
+      --conf spark.hadoop.fs.s3a.connection.request.timeout=60000
+      --conf spark.hadoop.fs.s3a.connection.idle.time=60000
     environment:
+        SPARK_NO_DAEMONIZE: "true"
         HIVE_METASTORE_URI: thrift://hive-metastore:9083
         SPARK_MASTER: spark://spark-master:7077
         AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}

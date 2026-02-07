@@ -3,11 +3,11 @@ sys.path.insert(0, '/opt/airflow/dags')
 
 from pyspark.sql.functions import (
     col, year, month, dayofmonth, hour, date_format,
-    dayofweek, when, to_timestamp, concat, lpad, lit
+    dayofweek, when, to_timestamp, concat, lpad, lit, current_timestamp
 )
-from spark_config import create_spark_session, S3_BUCKET
+from spark_config import create_spark_session_with_es, S3_BUCKET
 
-spark = create_spark_session("Time Dimensions")
+spark = create_spark_session_with_es("Time Dimensions")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -54,9 +54,14 @@ df = df.withColumn("season",
     .otherwise("Fall")
 )
 
+df = df.withColumn("indexed_at", current_timestamp())
+
 df.show(5)
 
-df.coalesce(1) \
-    .write \
+df.write \
+    .format("org.elasticsearch.spark.sql") \
+    .option("es.resource", "gold-time-dimensions") \
     .mode("overwrite") \
-    .parquet(f"s3a://{S3_BUCKET}/gold/time_enriched.parquet")
+    .save()
+
+spark.stop()

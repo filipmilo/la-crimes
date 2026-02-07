@@ -3,12 +3,12 @@ sys.path.insert(0, '/opt/airflow/dags')
 
 from pyspark.sql.functions import (
     col, when, isnan, isnull, regexp_replace, upper, trim,
-    coalesce, lit, length, size, split
+    coalesce, lit, length, size, split, current_timestamp
 )
 from pyspark.sql.types import IntegerType
-from spark_config import create_spark_session, S3_BUCKET
+from spark_config import create_spark_session_with_es, S3_BUCKET
 
-spark = create_spark_session("Data Quality Improvements")
+spark = create_spark_session_with_es("Data Quality Improvements")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -103,9 +103,14 @@ df = df.withColumn("has_data_issues",
     , True).otherwise(False)
 )
 
+df = df.withColumn("indexed_at", current_timestamp())
+
 df.show(5)
 
-df.coalesce(1) \
-    .write \
+df.write \
+    .format("org.elasticsearch.spark.sql") \
+    .option("es.resource", "gold-data-quality") \
     .mode("overwrite") \
-    .parquet(f"s3a://{S3_BUCKET}/gold/data_quality_enhanced.parquet")
+    .save()
+
+spark.stop()

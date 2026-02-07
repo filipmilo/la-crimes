@@ -3,11 +3,11 @@ sys.path.insert(0, '/opt/airflow/dags')
 
 from pyspark.sql.functions import (
     col, when, isnan, isnull, sqrt, pow, lit,
-    round as spark_round, regexp_replace, upper, trim
+    round as spark_round, regexp_replace, upper, trim, current_timestamp, struct
 )
-from spark_config import create_spark_session, S3_BUCKET
+from spark_config import create_spark_session_with_es, S3_BUCKET
 
-spark = create_spark_session("Geographic Enrichment")
+spark = create_spark_session_with_es("Geographic Enrichment")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -88,9 +88,21 @@ area_density = area_density.withColumn("area_density_category",
 # Join density information back to main dataframe
 df = df.join(area_density.select("area_id", "area_density_category"), "area_id", "left")
 
+# Create geo_point structure for Elasticsearch
+df = df.withColumn("location",
+    when(col("has_valid_coordinates"),
+        struct(col("lat"), col("lon"))
+    ).otherwise(None)
+)
+
+df = df.withColumn("indexed_at", current_timestamp())
+
 df.show(5)
 
-df.coalesce(1) \
-    .write \
+df.write \
+    .format("org.elasticsearch.spark.sql") \
+    .option("es.resource", "gold-geographic-enrichment") \
     .mode("overwrite") \
-    .parquet(f"s3a://{S3_BUCKET}/gold/geo_enriched.parquet")
+    .save()
+
+spark.stop()

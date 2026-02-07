@@ -4,12 +4,12 @@ sys.path.insert(0, '/opt/airflow/dags')
 from pyspark.sql.functions import (
     col, count, sum as spark_sum, avg, max as spark_max, min as spark_min,
     when, datediff, lag, desc, asc, round as spark_round,
-    dense_rank, percent_rank, ntile, coalesce, lit
+    dense_rank, percent_rank, ntile, coalesce, lit, current_timestamp
 )
 from pyspark.sql.window import Window
-from spark_config import create_spark_session, S3_BUCKET
+from spark_config import create_spark_session_with_es, S3_BUCKET
 
-spark = create_spark_session("Business Metrics")
+spark = create_spark_session_with_es("Business Metrics")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -122,9 +122,14 @@ df = df.withColumn("area_risk_level",
     .otherwise("Very Low Risk")
 )
 
+df = df.withColumn("indexed_at", current_timestamp())
+
 df.show(5)
 
-df.coalesce(1) \
-    .write \
+df.write \
+    .format("org.elasticsearch.spark.sql") \
+    .option("es.resource", "gold-business-metrics") \
     .mode("overwrite") \
-    .parquet(f"s3a://{S3_BUCKET}/gold/business_metrics.parquet")
+    .save()
+
+spark.stop()

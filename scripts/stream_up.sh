@@ -10,6 +10,16 @@ export AWS_DEFAULT_REGION=$(aws configure get private_account.region)
 echo "> Creating docker network 'asvsp' (if not exists)"
 docker network create asvsp 2>/dev/null || echo "Network 'asvsp' already exists"
 
+echo ">> Starting Elasticsearch"
+docker compose -f ElasticSearch/docker-compose.yml up -d
+
+echo ">> Waiting for Elasticsearch to be ready..."
+until curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green"\|"status":"yellow"'; do
+    echo "   Elasticsearch not ready, waiting..."
+    sleep 3
+done
+echo "   ✓ Elasticsearch ready!"
+
 echo ">> Starting up Kafka"
 docker compose -f Kafka/docker-compose.yml up -d
 echo ">> Waiting for Kafka to be ready..."
@@ -20,8 +30,8 @@ docker compose -f StreamProcessing/docker-compose.yml up -d
 echo ">> Waiting for Stream Processor to initialize..."
 sleep 10
 
-echo "> Stream Processing Stack started successfully!"
-echo "> Kafka UI available at: http://localhost:8081"
-echo "> To test: cd Kafka && python producer.py (in one terminal)"
-echo ">         cd Kafka && python consumer.py (in another terminal)"
-echo ">         cd StreamProcessing && python stream_processor.py (for processing)"
+echo "✅ Stream Processing Stack started successfully!"
+echo ""
+echo "Service UIs:"
+echo "  - Kafka UI: http://localhost:8081"
+echo "  - Elasticsearch: http://localhost:9200"

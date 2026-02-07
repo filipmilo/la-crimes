@@ -1,10 +1,10 @@
 import sys
 sys.path.insert(0, '/opt/airflow/dags')
 
-from pyspark.sql.functions import col, when, upper, trim
-from spark_config import create_spark_session, S3_BUCKET
+from pyspark.sql.functions import col, when, upper, trim, current_timestamp
+from spark_config import create_spark_session_with_es, S3_BUCKET
 
-spark = create_spark_session("Categorical Standardization")
+spark = create_spark_session_with_es("Categorical Standardization")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -52,9 +52,14 @@ df = df.withColumn("weapon_category",
     .otherwise("Other")
 )
 
+df = df.withColumn("indexed_at", current_timestamp())
+
 df.show(5)
 
-df.coalesce(1) \
-    .write \
+df.write \
+    .format("org.elasticsearch.spark.sql") \
+    .option("es.resource", "gold-categorical-standardization") \
     .mode("overwrite") \
-    .parquet(f"s3a://{S3_BUCKET}/gold/categorical_standardized.parquet")
+    .save()
+
+spark.stop()

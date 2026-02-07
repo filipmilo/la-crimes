@@ -1,21 +1,20 @@
-# Los Angeles crime data analysis
+# Los Angeles Crime Data Analysis
 
-
-### Architecture
+## Architecture
 
 ![High level project architecture](diagrams/architecture.png)
 
 
-### Running the cluster
+## Running the cluster
 
-`./scripts/cluster_up.sh`
+  ./scripts/cluster_up.sh
 
 
-### Shut off
+## Shut off
 
-`./scripts/cluster_down.sh`
+  ./scripts/cluster_down.sh
 
-### Notice
+## Notice
 
 - Instead of HDFS, S3 will be used since my machine can't handle the entire cluster.
 - Before running the cluster make sure to have an AWS account setup.

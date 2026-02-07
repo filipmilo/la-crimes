@@ -4,7 +4,7 @@ from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemTo
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
 BUCKET = "la-crimes-data-lake"
-SPARK_PACKAGES = "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262,org.elasticsearch:elasticsearch-spark-30_2.12:8.9.0"
+SPARK_PACKAGES = "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262,org.elasticsearch:elasticsearch-spark-30_2.12:8.11.4"
 
 @dag(
     dag_id="pipeline",

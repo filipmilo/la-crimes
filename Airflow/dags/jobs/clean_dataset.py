@@ -4,7 +4,9 @@ sys.path.insert(0, '/opt/airflow/dags')
 from pyspark.sql.functions import to_date, year, col
 from spark_config import create_spark_session, S3_BUCKET
 
-TIME_FORMAT="MM/dd/yyyy hh:mm:ss a"
+
+'''2010 Jan 26 12:00:00 AM'''
+TIME_FORMAT="yyyy MMM dd hh:mm:ss a"
 
 spark = create_spark_session("Clean Dataset")
 
@@ -37,9 +39,8 @@ df = df \
     .withColumnRenamed("LAT", "lat") \
     .withColumnRenamed("LON", "lon") \
     .withColumnRenamed("Date Rptd", "date_reported") \
-    .withColumnRenamed("Date OCC", "date_occured") \
+    .withColumnRenamed("DATE OCC", "date_occured") \
     .withColumnRenamed("TIME OCC", "time_occured") 
-
 
 df = df \
     .withColumn("date_reported", to_date(df["date_reported"], TIME_FORMAT)) \

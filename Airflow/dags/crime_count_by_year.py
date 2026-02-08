@@ -13,7 +13,7 @@ def perform():
             task_id='crime_count_by_year',
             conn_id='SPARK_CONNECTION',
             application='dags/jobs/crime_count_by_year.py',
-            packages="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262,org.elasticsearch:elasticsearch-spark-30_2.12:8.11.4",
+            packages="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262,org.mongodb.spark:mongo-spark-connector_2.12:10.4.0",
             verbose=True
         )
 

@@ -23,10 +23,16 @@ def create_spark_session(app_name):
         .config("spark.hadoop.fs.s3a.connection.idle.time", "60000") \
         .getOrCreate()
 
-def create_spark_session_with_es(app_name, es_host="elasticsearch", es_port="9200"):
+def create_spark_session_with_mongo(app_name):
     return SparkSession \
         .builder \
         .appName(app_name) \
+        .master("spark://spark-master:7077") \
+        .config("spark.jars.packages", ",".join([
+            "org.apache.hadoop:hadoop-aws:3.3.4",
+            "com.amazonaws:aws-java-sdk-bundle:1.12.262",
+            "org.mongodb.spark:mongo-spark-connector_2.12:10.4.0"
+        ])) \
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
         .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID")) \
         .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_ACCESS_KEY")) \
@@ -36,12 +42,6 @@ def create_spark_session_with_es(app_name, es_host="elasticsearch", es_port="920
         .config("spark.hadoop.fs.s3a.connection.acquisition.timeout", "60000") \
         .config("spark.hadoop.fs.s3a.connection.request.timeout", "60000") \
         .config("spark.hadoop.fs.s3a.connection.idle.time", "60000") \
-        .config("es.nodes", es_host) \
-        .config("es.port", es_port) \
-        .config("es.nodes.wan.only", "true") \
-        .config("es.batch.size.entries", "10000") \
-        .config("es.batch.write.refresh", "false") \
-        .config("es.write.operation", "upsert") \
-        .config("es.mapping.id", "dr_no") \
-        .config("es.index.auto.create", "false") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://admin:admin123@mongodb:27017/la_crimes?authSource=admin") \
+        .config("spark.mongodb.write.database", "la_crimes") \
         .getOrCreate()

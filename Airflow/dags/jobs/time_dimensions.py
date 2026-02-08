@@ -5,9 +5,9 @@ from pyspark.sql.functions import (
     col, year, month, dayofmonth, hour, date_format,
     dayofweek, when, to_timestamp, concat, lpad, lit, current_timestamp
 )
-from spark_config import create_spark_session_with_es, S3_BUCKET
+from spark_config import create_spark_session_with_mongo, S3_BUCKET
 
-spark = create_spark_session_with_es("Time Dimensions")
+spark = create_spark_session_with_mongo("Time Dimensions")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -59,8 +59,8 @@ df = df.withColumn("indexed_at", current_timestamp())
 df.show(5)
 
 df.write \
-    .format("org.elasticsearch.spark.sql") \
-    .option("es.resource", "gold-time-dimensions") \
+    .format("mongodb") \
+    .option("collection", "gold_time_dimensions") \
     .mode("overwrite") \
     .save()
 

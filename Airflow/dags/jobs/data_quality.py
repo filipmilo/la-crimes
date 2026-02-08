@@ -6,9 +6,9 @@ from pyspark.sql.functions import (
     coalesce, lit, length, size, split, current_timestamp
 )
 from pyspark.sql.types import IntegerType
-from spark_config import create_spark_session_with_es, S3_BUCKET
+from spark_config import create_spark_session_with_mongo, S3_BUCKET
 
-spark = create_spark_session_with_es("Data Quality Improvements")
+spark = create_spark_session_with_mongo("Data Quality Improvements")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -108,8 +108,8 @@ df = df.withColumn("indexed_at", current_timestamp())
 df.show(5)
 
 df.write \
-    .format("org.elasticsearch.spark.sql") \
-    .option("es.resource", "gold-data-quality") \
+    .format("mongodb") \
+    .option("collection", "gold_data_quality") \
     .mode("overwrite") \
     .save()
 

@@ -12,6 +12,11 @@ docker network create asvsp
 
 #ssh_server_startup_cmd='bash -c "/usr/sbin/sshd"'
 
+echo ">> Starting up MongoDB"
+docker compose -f MongoDB/docker-compose.yml up -d
+echo ">> Waiting for MongoDB to be ready..."
+sleep 10
+
 echo ">> Starting up Apache Spark"
 docker compose -f Apache-Spark/docker-compose.yml up -d
 sleep 15

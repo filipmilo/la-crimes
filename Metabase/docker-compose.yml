@@ -7,7 +7,7 @@ networks:
     
 services:
   metabase-postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: mb-postgres
     hostname: mb-postgres
     ports:
@@ -28,6 +28,7 @@ services:
     hostname: metabase
     volumes:
       - ./data:/dev/random:ro
+      - ./plugins:/plugins
     ports:
       - 3000:3000
     depends_on:

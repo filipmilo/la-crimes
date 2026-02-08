@@ -5,9 +5,9 @@ from pyspark.sql.functions import (
     col, when, isnan, isnull, sqrt, pow, lit,
     round as spark_round, regexp_replace, upper, trim, current_timestamp, struct
 )
-from spark_config import create_spark_session_with_es, S3_BUCKET
+from spark_config import create_spark_session_with_mongo, S3_BUCKET
 
-spark = create_spark_session_with_es("Geographic Enrichment")
+spark = create_spark_session_with_mongo("Geographic Enrichment")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -100,8 +100,8 @@ df = df.withColumn("indexed_at", current_timestamp())
 df.show(5)
 
 df.write \
-    .format("org.elasticsearch.spark.sql") \
-    .option("es.resource", "gold-geographic-enrichment") \
+    .format("mongodb") \
+    .option("collection", "gold_geographic_enrichment") \
     .mode("overwrite") \
     .save()
 

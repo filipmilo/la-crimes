@@ -14,6 +14,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo ">> Shutting down Apache Spark"
   docker compose -f Apache-Spark/docker-compose.yml down -v
 
+  echo ">> Shutting down MongoDB"
+  docker compose -f MongoDB/docker-compose.yml down -v
+
   echo ">> Shutting down Kafka"
   docker compose -f Kafka/docker-compose.yml down -v
 else
@@ -25,6 +28,9 @@ else
 
   echo ">> Shutting down Apache Spark"
   docker compose -f Apache-Spark/docker-compose.yml down
+
+  echo ">> Shutting down MongoDB"
+  docker compose -f MongoDB/docker-compose.yml down
 
   echo ">> Shutting down Kafka"
   docker compose -f Kafka/docker-compose.yml down

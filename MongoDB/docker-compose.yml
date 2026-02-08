@@ -1,0 +1,32 @@
+version: "3"
+
+networks:
+  asvsp:
+    name: asvsp
+    external: true
+
+volumes:
+  mongodb_data:
+    driver: local
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    hostname: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: la_crimes
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - asvsp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

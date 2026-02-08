@@ -2,9 +2,9 @@ import sys
 sys.path.insert(0, '/opt/airflow/dags')
 
 from pyspark.sql.functions import col, when, upper, trim, current_timestamp
-from spark_config import create_spark_session_with_es, S3_BUCKET
+from spark_config import create_spark_session_with_mongo, S3_BUCKET
 
-spark = create_spark_session_with_es("Categorical Standardization")
+spark = create_spark_session_with_mongo("Categorical Standardization")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -57,8 +57,8 @@ df = df.withColumn("indexed_at", current_timestamp())
 df.show(5)
 
 df.write \
-    .format("org.elasticsearch.spark.sql") \
-    .option("es.resource", "gold-categorical-standardization") \
+    .format("mongodb") \
+    .option("collection", "gold_categorical_standardization") \
     .mode("overwrite") \
     .save()
 

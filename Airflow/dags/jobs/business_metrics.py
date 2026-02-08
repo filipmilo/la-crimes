@@ -7,9 +7,9 @@ from pyspark.sql.functions import (
     dense_rank, percent_rank, ntile, coalesce, lit, current_timestamp
 )
 from pyspark.sql.window import Window
-from spark_config import create_spark_session_with_es, S3_BUCKET
+from spark_config import create_spark_session_with_mongo, S3_BUCKET
 
-spark = create_spark_session_with_es("Business Metrics")
+spark = create_spark_session_with_mongo("Business Metrics")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
@@ -127,8 +127,8 @@ df = df.withColumn("indexed_at", current_timestamp())
 df.show(5)
 
 df.write \
-    .format("org.elasticsearch.spark.sql") \
-    .option("es.resource", "gold-business-metrics") \
+    .format("mongodb") \
+    .option("collection", "gold_business_metrics") \
     .mode("overwrite") \
     .save()
 

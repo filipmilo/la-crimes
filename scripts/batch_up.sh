@@ -10,18 +10,10 @@ export AWS_DEFAULT_REGION=$(aws configure get private_account.region)
 echo "> Creating docker network 'asvsp' (if not exists)"
 docker network create asvsp 2>/dev/null || echo "Network 'asvsp' already exists"
 
-echo ">> Starting Elasticsearch"
-docker compose -f ElasticSearch/docker-compose.yml up -d
-
-echo ">> Waiting for Elasticsearch to be ready..."
-until curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green"\|"status":"yellow"'; do
-    echo "   Elasticsearch not ready, waiting..."
-    sleep 3
-done
-echo "   ✓ Elasticsearch ready!"
-
-echo ">> Creating gold layer indices"
-bash ElasticSearch/create_indices.sh
+echo ">> Starting MongoDB"
+docker compose -f MongoDB/docker-compose.yml up -d
+echo ">> Waiting for MongoDB to be ready..."
+sleep 10
 
 echo ">> Starting up Apache Spark"
 docker compose -f Apache-Spark/docker-compose.yml up -d
@@ -47,7 +39,5 @@ echo ""
 echo "Service UIs:"
 echo "  - Airflow: http://localhost:8080"
 echo "  - Spark Master: http://localhost:8000"
-echo "  - Elasticsearch: http://localhost:9200"
-echo "  - ES Health: curl http://localhost:9200/_cluster/health"
-echo "  - ES Gold Indices: curl http://localhost:9200/_cat/indices/gold-*"
-echo "  - ES Stream Indices: curl http://localhost:9200/_cat/indices/911-*"
+echo "  - MongoDB: mongodb://admin:admin123@localhost:27017"
+echo "  - MongoDB Shell: docker exec -it mongodb mongosh -u admin -p admin123 --authenticationDatabase admin"

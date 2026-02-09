@@ -13,7 +13,6 @@ spark = create_spark_session_with_mongo("Business Metrics")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
-# Calculate case resolution rates by area
 resolution_stats = df.groupBy("area_id", "area_name") \
     .agg(
         count("*").alias("total_cases"),
@@ -28,10 +27,8 @@ resolution_stats = df.groupBy("area_id", "area_name") \
         .otherwise("Low Performance")
     )
 
-# Join resolution stats back to main dataframe
 df = df.join(resolution_stats.select("area_id", "resolution_rate", "area_performance_tier"), "area_id", "left")
 
-# Create crime density metrics
 area_crime_density = df.groupBy("area_id") \
     .agg(count("*").alias("crime_count")) \
     .withColumn("crime_density_percentile",
@@ -45,10 +42,8 @@ area_crime_density = df.groupBy("area_id") \
         .otherwise("Very Low Crime")
     )
 
-# Join crime density back to main dataframe
 df = df.join(area_crime_density.select("area_id", "crime_density_category", "crime_density_percentile"), "area_id", "left")
 
-# Calculate reporting lag (days between occurrence and reporting)
 df = df.withColumn("reporting_lag_days",
     when(
         col("date_reported").isNotNull() & col("date_occured").isNotNull(),
@@ -56,7 +51,6 @@ df = df.withColumn("reporting_lag_days",
     ).otherwise(None)
 )
 
-# Categorize reporting lag
 df = df.withColumn("reporting_speed",
     when(col("reporting_lag_days") == 0, "Same Day")
     .when(col("reporting_lag_days") <= 1, "Next Day")
@@ -66,10 +60,8 @@ df = df.withColumn("reporting_speed",
     .otherwise("Unknown")
 )
 
-# Create temporal crime patterns
 temporal_window = Window.partitionBy("area_id").orderBy("date_occured")
 
-# Calculate crime trends (year-over-year change)
 yearly_stats = df.groupBy("area_id", "occurrence_year") \
     .agg(count("*").alias("yearly_crime_count")) \
     .withColumn("prev_year_count",
@@ -91,22 +83,17 @@ yearly_stats = df.groupBy("area_id", "occurrence_year") \
         .otherwise("Unknown")
     )
 
-# Join yearly trends back to main dataframe
 df = df.join(
     yearly_stats.select("area_id", "occurrence_year", "yoy_crime_change_pct", "crime_trend"),
     ["area_id", "occurrence_year"], 
     "left"
 )
 
-# Create risk scores based on multiple factors
 df = df.withColumn("area_risk_score",
     spark_round(
         (
-            # Crime density factor (40% weight)
             (col("crime_density_percentile") / 100 * 0.4) +
-            # Resolution rate factor (30% weight, inverted)
             ((100 - coalesce(col("resolution_rate"), lit(50))) / 100 * 0.3) +
-            # Trend factor (30% weight)
             (when(col("crime_trend") == "Increasing", 0.3)
              .when(col("crime_trend") == "Decreasing", 0.1)
              .otherwise(0.2))
@@ -114,7 +101,6 @@ df = df.withColumn("area_risk_score",
     )
 )
 
-# Categorize risk levels
 df = df.withColumn("area_risk_level",
     when(col("area_risk_score") >= 75, "High Risk")
     .when(col("area_risk_score") >= 50, "Medium Risk")

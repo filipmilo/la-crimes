@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, '/opt/airflow/dags')
 
 from pyspark.sql.functions import (
-    col, when, isnan, isnull, sqrt, pow, lit,
+    col, when, isnan, isnull, sqrt, pow, lit, count,
     round as spark_round, regexp_replace, upper, trim, current_timestamp, struct
 )
 from spark_config import create_spark_session_with_mongo, S3_BUCKET
@@ -66,15 +66,10 @@ df = df.withColumn("street_address_clean",
 )
 
 # Create area density categories based on area_id
-area_density = spark.sql("""
-    SELECT area_id, COUNT(*) as crime_count
-    FROM temp_df 
-    WHERE area_id IS NOT NULL
-    GROUP BY area_id
-""")
-
-# Register temp view for the main dataframe
-df.createOrReplaceTempView("temp_df")
+# Calculate crime count per area using DataFrame API
+area_density = df.filter(col("area_id").isNotNull()) \
+    .groupBy("area_id") \
+    .agg(count("*").alias("crime_count"))
 
 # Create density categories
 area_density = area_density.withColumn("area_density_category",

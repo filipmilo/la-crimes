@@ -1,21 +1,23 @@
-FROM python:3.11-slim
+# Stage 1: Build with Maven
+FROM maven:3.9-eclipse-temurin-17 AS builder
+
+WORKDIR /build
+
+# Copy pom.xml and download dependencies (cached layer)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Stage 2: Runtime with JRE
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the built JAR from builder stage
+COPY --from=builder /build/target/stream-processor-*.jar app.jar
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the stream processor
-COPY stream_processor.py .
-
-# Set environment variables
-ENV KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-ENV ELASTICSEARCH_HOST=elasticsearch:9200
-
-CMD ["python", "stream_processor.py"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

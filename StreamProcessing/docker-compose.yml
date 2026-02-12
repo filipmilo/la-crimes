@@ -6,15 +6,30 @@ networks:
     external: true
 
 services:
-  stream-processor:
+  kafka-streams-processor:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: stream-processor
+    container_name: kafka-streams-processor
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - ELASTICSEARCH_HOST=elasticsearch:9200
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/la_crimes?authSource=admin
+      MONGODB_DATABASE: la_crimes
+      MONGODB_COLLECTION: stream_911_calls
+      MONGODB_BATCH_SIZE: 100
+      MONGODB_BATCH_TIMEOUT_MS: 5000
+      MONGODB_RETRY_ATTEMPTS: 3
+      INPUT_TOPIC: 911-calls
+      APPLICATION_ID: stream-processor-app
     networks:
       - asvsp
     restart: unless-stopped
 
+  kafka-producer:
+    build:
+      context: ../Kafka
+      dockerfile: Dockerfile.producer
+    container_name: kafka-producer
+    networks:
+      - asvsp
+    restart: unless-stopped

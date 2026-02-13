@@ -62,18 +62,18 @@ services:
       - asvsp
     restart: unless-stopped
 
-  consumer:
-    build:
-      context: .
-      dockerfile: Dockerfile.consumer
-    container_name: kafka-consumer
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      KAFKA_TOPIC: 911-calls
-    volumes:
-      - ./output:/tmp/911_calls
-    networks:
-      - asvsp
-    restart: unless-stopped
+  #consumer:
+  #  build:
+  #    context: .
+  #    dockerfile: Dockerfile.consumer
+  #  container_name: kafka-consumer
+  #  depends_on:
+  #    - kafka
+  #  environment:
+  #    KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  #    KAFKA_TOPIC: 911-calls
+  #  volumes:
+  #    - ./output:/tmp/911_calls
+  #  networks:
+  #    - asvsp
+  #  restart: unless-stopped

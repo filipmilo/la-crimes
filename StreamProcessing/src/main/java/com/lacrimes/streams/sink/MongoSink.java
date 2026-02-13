@@ -89,7 +89,7 @@ public class MongoSink implements AutoCloseable {
                 attempt++;
                 bulkWrite(toWrite);
                 success = true;
-                logger.debug("Successfully wrote {} documents to MongoDB", toWrite.size());
+                logger.info("Successfully wrote {} documents to MongoDB", toWrite.size());
             } catch (MongoException e) {
                 logger.warn("MongoDB write failed (attempt {}/{}): {}",
                         attempt, retryAttempts, e.getMessage());

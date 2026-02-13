@@ -24,12 +24,3 @@ services:
     networks:
       - asvsp
     restart: unless-stopped
-
-  kafka-producer:
-    build:
-      context: ../Kafka
-      dockerfile: Dockerfile.producer
-    container_name: kafka-producer
-    networks:
-      - asvsp
-    restart: unless-stopped

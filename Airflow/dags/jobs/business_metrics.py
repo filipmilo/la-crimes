@@ -13,10 +13,10 @@ spark = create_spark_session_with_mongo("Business Metrics")
 
 df = spark.read.parquet(f"s3a://{S3_BUCKET}/silver/cleaned.parquet")
 
-resolution_stats = df.groupBy("area_id", "area_name") \
+resolution_stats = df.groupBy("area_id") \
     .agg(
         count("*").alias("total_cases"),
-        spark_sum(when(col("status_description").rlike("(?i)(closed|cleared|solved)"), 1).otherwise(0)).alias("resolved_cases")
+        spark_sum(when(col("status_resolution") == "Closed", 1).otherwise(0)).alias("resolved_cases")
     ) \
     .withColumn("resolution_rate", 
         spark_round(col("resolved_cases") / col("total_cases") * 100, 2)
@@ -84,7 +84,7 @@ yearly_stats = df.groupBy("area_id", "occurrence_year") \
     )
 
 df = df.join(
-    yearly_stats.select("area_id", "occurrence_year", "yoy_crime_change_pct", "crime_trend"),
+    yearly_stats.select("area_id", "occurrence_year", "yoy_crime_change_pct", "crime_trend", "yearly_crime_count"),
     ["area_id", "occurrence_year"], 
     "left"
 )
@@ -117,5 +117,26 @@ df.write \
     .option("collection", "gold_business_metrics") \
     .mode("overwrite") \
     .save()
+
+df.select(
+    "area_id", "area_name", "occurrence_year",
+    "yearly_crime_count", "yoy_crime_change_pct", "crime_trend",
+    "area_risk_score", "area_risk_level"
+) \
+    .dropDuplicates(["area_id", "occurrence_year"]) \
+    .write.mode("overwrite") \
+    .parquet(f"s3a://{S3_BUCKET}/silver/business_metrics/yoy_stats.parquet")
+
+df.select(
+    "area_id", "area_name",
+    "resolution_rate", "area_performance_tier",
+    "crime_density_percentile", "crime_density_category"
+) \
+    .dropDuplicates(["area_id"]) \
+    .write.mode("overwrite") \
+    .parquet(f"s3a://{S3_BUCKET}/silver/business_metrics/area_summary.parquet")
+
+df.write.mode("overwrite") \
+    .parquet(f"s3a://{S3_BUCKET}/silver/business_metrics/enriched.parquet")
 
 spark.stop()

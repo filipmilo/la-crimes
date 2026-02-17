@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '/opt/airflow/dags')
 
-from pyspark.sql.functions import to_date, year, col
+from pyspark.sql.functions import to_date, year, col, when
 from spark_config import create_spark_session, S3_BUCKET
 
 
@@ -47,6 +47,13 @@ df = df \
     .withColumn("date_occured", to_date(df["date_occured"], TIME_FORMAT)) \
     .withColumn("occurrence_year", year(col("date_occured"))) \
     .withColumn("report_year", year(col("date_reported")))
+
+df = df \
+    .withColumn("status_resolution",
+         when(col("status").rlike("(?i)(AA|AO|JA|JO)"), "Closed")
+        .when(col("status") == "IC", "Ongoing")
+        .otherwise("Unknown")
+    )
 
 df.show(5)
 

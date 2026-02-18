@@ -30,6 +30,18 @@ public class Call911 {
     @JsonProperty("status")
     private String status;
 
+    @JsonProperty("area_risk_level")
+    private String areaRiskLevel;
+
+    @JsonProperty("area_performance_tier")
+    private String areaPerformanceTier;
+
+    @JsonProperty("crime_density_category")
+    private String crimeDensityCategory;
+
+    @JsonProperty("resolution_rate")
+    private double resolutionRate;
+
     public Call911() {}
 
     public String getCallId() {
@@ -102,6 +114,38 @@ public class Call911 {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getAreaRiskLevel() {
+        return areaRiskLevel;
+    }
+
+    public void setAreaRiskLevel(String areaRiskLevel) {
+        this.areaRiskLevel = areaRiskLevel;
+    }
+
+    public String getAreaPerformanceTier() {
+        return areaPerformanceTier;
+    }
+
+    public void setAreaPerformanceTier(String areaPerformanceTier) {
+        this.areaPerformanceTier = areaPerformanceTier;
+    }
+
+    public String getCrimeDensityCategory() {
+        return crimeDensityCategory;
+    }
+
+    public void setCrimeDensityCategory(String crimeDensityCategory) {
+        this.crimeDensityCategory = crimeDensityCategory;
+    }
+
+    public double getResolutionRate() {
+        return resolutionRate;
+    }
+
+    public void setResolutionRate(double resolutionRate) {
+        this.resolutionRate = resolutionRate;
     }
 
     @Override

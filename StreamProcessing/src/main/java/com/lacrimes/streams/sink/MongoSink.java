@@ -1,13 +1,11 @@
 package com.lacrimes.streams.sink;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lacrimes.streams.model.Call911;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
@@ -51,10 +49,12 @@ public class MongoSink implements AutoCloseable {
                 collectionName, batchSize, batchTimeoutMs);
     }
 
-    public synchronized void write(Call911 call) {
+    public synchronized void write(String id, Object value) {
         try {
-            Document doc = convertToDocument(call);
-            doc.append("processed_at", Instant.now().toString())
+            String json = objectMapper.writeValueAsString(value);
+            Document doc = Document.parse(json);
+            doc.append("_id", id)
+               .append("processed_at", Instant.now().toString())
                .append("processing_version", PROCESSING_VERSION);
 
             buffer.add(doc);
@@ -63,7 +63,7 @@ public class MongoSink implements AutoCloseable {
                 flush();
             }
         } catch (Exception e) {
-            logger.error("Failed to buffer call: {}", call.getCallId(), e);
+            logger.error("Failed to buffer document: {}", id, e);
         }
     }
 
@@ -113,23 +113,12 @@ public class MongoSink implements AutoCloseable {
         ReplaceOptions options = new ReplaceOptions().upsert(true);
 
         for (Document doc : documents) {
-            String callId = doc.getString("call_id");
-            Document filter = new Document("_id", callId);
-            doc.append("_id", callId);
+            Object id = doc.get("_id");
+            Document filter = new Document("_id", id);
             operations.add(new ReplaceOneModel<>(filter, doc, options));
         }
 
         collection.bulkWrite(operations);
-    }
-
-    private Document convertToDocument(Call911 call) {
-        try {
-            String json = objectMapper.writeValueAsString(call);
-            return Document.parse(json);
-        } catch (Exception e) {
-            logger.error("Failed to convert Call911 to Document: {}", call.getCallId(), e);
-            throw new RuntimeException("Conversion failed", e);
-        }
     }
 
     @Override
